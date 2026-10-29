@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <RootNamespace>Pulse</RootNamespace>
+    <AssemblyName>Pulse</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- WinUI 3, unpackaged, fully self-contained -->
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\Pulse.ico</ApplicationIcon>
+
+    <!-- Metadata -->
+    <Product>Pulse</Product>
+    <AssemblyTitle>Pulse - live system dashboard</AssemblyTitle>
+    <Company>Pulse</Company>
+    <Version>1.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+
+    <!-- Trimming is not safe for WinUI/CsWinRT reflection-heavy XAML; keep it off. -->
+    <PublishTrimmed>false</PublishTrimmed>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Derive Platform from the RID so `dotnet publish -r win-arm64` just works -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-arm64'">
+    <Platform>ARM64</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+    <Platform>x64</Platform>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\Pulse.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Pulse.png" CopyToOutputDirectory="PreserveNewest" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260921001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.9169" />
+    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.1" />
+  </ItemGroup>
+</Project>

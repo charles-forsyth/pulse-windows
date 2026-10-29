@@ -1,0 +1,27 @@
+---
+name: Feature Request
+description: Suggest an idea or enhancement for Pulse
+title: "[FEATURE] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem?
+      description: A clear description of what problem you are trying to solve.
+    validations:
+      required: false
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the feature or improvement you would like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any other approaches or existing tools you considered.
+    validations:
+      required: false

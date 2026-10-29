@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pulse — Modern System Monitor for Windows 11 & 10</title>
+  <meta name="description" content="A live system dashboard for Windows 11 and 10 built natively with WinUI 3 and .NET 8. Native ARM64 and x64 support.">
+  <link rel="icon" type="image/png" href="screenshots/pulse_overview_dark.png">
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card-bg: rgba(26, 29, 39, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover: rgba(40, 44, 58, 0.85);
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.35);
+      --accent-cyan: #06b6d4;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --code-bg: #161822;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 65%, rgba(6, 182, 212, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 50% 90%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(15, 17, 23, 0.75);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.85rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .pulse-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse-glow 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .badge-arch {
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: rgba(99, 102, 241, 0.2);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    nav { display: flex; gap: 1.5rem; align-items: center; }
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--text); }
+    .btn-nav-gh {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      padding: 0.45rem 0.9rem;
+      border-radius: 6px;
+      color: var(--text);
+    }
+    .btn-nav-gh:hover { background: rgba(255, 255, 255, 0.15); }
+
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 5rem 2rem 3rem;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 70%, #67e8f9 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      color: var(--text-muted);
+      max-width: 760px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .cta-group {
+      display: flex;
+      justify-content: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      margin-bottom: 3.5rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #fff;
+      font-weight: 600;
+      padding: 0.9rem 1.8rem;
+      border-radius: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      font-weight: 600;
+      padding: 0.9rem 1.8rem;
+      border-radius: 8px;
+      text-decoration: none;
+      border: 1px solid var(--card-border);
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Showcase preview container */
+    .showcase-window {
+      max-width: 1100px;
+      margin: 0 auto 5rem;
+      background: rgba(18, 20, 29, 0.9);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+    }
+
+    .window-header {
+      background: rgba(25, 28, 40, 0.8);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .window-tabs {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.45rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+    }
+    .tab-btn:hover:not(.active) {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .window-body {
+      padding: 0;
+      position: relative;
+      background: #000;
+    }
+
+    .window-body img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: opacity 0.3s;
+    }
+
+    /* Features section */
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .section-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-align: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      background: var(--card-hover);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      font-size: 1.3rem;
+    }
+
+    .card h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+
+    /* Downloads & SmartScreen */
+    .download-card {
+      background: linear-gradient(145deg, rgba(30, 34, 48, 0.9), rgba(20, 23, 34, 0.9));
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 2.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .download-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .dl-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+    .dl-item:hover {
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.08);
+      transform: translateY(-2px);
+    }
+    .dl-title { font-weight: 700; font-size: 1.1rem; color: #a5b4fc; }
+    .dl-desc { font-size: 0.85rem; color: var(--text-muted); }
+
+    .smartscreen-notice {
+      margin-top: 2rem;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 8px;
+      padding: 1.25rem;
+      font-size: 0.92rem;
+      color: #fbbf24;
+      line-height: 1.6;
+    }
+    .smartscreen-notice strong { color: #fef3c7; }
+
+    /* Cite Box */
+    .cite-box {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.88rem;
+      color: #d1d5db;
+      overflow-x: auto;
+      white-space: pre;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      border-radius: 5px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 3rem 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    footer a { color: #a5b4fc; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="#" class="logo-group">
+      <div class="pulse-dot"></div>
+      <span class="logo-text">Pulse</span>
+      <span class="badge-arch">WinUI 3 · .NET 8</span>
+    </a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#screenshots">Screenshots</a>
+      <a href="#download">Download</a>
+      <a href="#cite">Cite</a>
+      <a href="https://github.com/charles-forsyth/pulse-windows" class="btn-nav-gh" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Instant Hardware & Process Telemetry</h1>
+      <p>A native Windows 11 system monitor crafted with WinUI 3 and .NET 8. Features real-time radial gauges, process inspect with pause, complete hardware inventory, and modern Mica styling.</p>
+      
+      <div class="cta-group">
+        <a href="#download" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+          Download Release v1.0.0
+        </a>
+        <a href="https://github.com/charles-forsyth/pulse-windows" class="btn-secondary" target="_blank" rel="noopener">
+          View Source
+        </a>
+      </div>
+
+      <div class="showcase-window" id="screenshots">
+        <div class="window-header">
+          <div class="window-tabs">
+            <button class="tab-btn active" onclick="switchTab('overview-dark')">Overview (Dark)</button>
+            <button class="tab-btn" onclick="switchTab('processes-dark')">Processes</button>
+            <button class="tab-btn" onclick="switchTab('system-dark')">System Specs</button>
+            <button class="tab-btn" onclick="switchTab('settings-dark')">Settings</button>
+            <button class="tab-btn" onclick="switchTab('overview-light')">Overview (Light)</button>
+          </div>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Mica Material · Native Windows 11</span>
+        </div>
+        <div class="window-body">
+          <img id="shot-img" src="screenshots/pulse_overview_dark.png" alt="Pulse Window Screenshot">
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <h2 class="section-title">Engineered for Precision & Aesthetics</h2>
+      <p class="section-subtitle">Zero bloatware. Direct Win32 performance counters. Clean modern XAML.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <h3>Direct Kernel Counters</h3>
+          <p>Collects CPU, memory, disk, and network stats via low-overhead Win32 APIs (GetSystemTimes, NtQuerySystemInformation, GlobalMemoryStatusEx, PerformanceCounter).</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🔍</div>
+          <h3>Process Inspector</h3>
+          <p>Sortable and searchable task list tracking PID, CPU percentage deltas, working set, private bytes, and threads with a real-time pause button to inspect spikes.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">💻</div>
+          <h3>Comprehensive Inventory</h3>
+          <p>Instant hardware inventory querying WMI, registry, and Win32 for exact CPU architecture, logical processors, socket counts, L2/L3 cache, and OS build telemetry.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🎨</div>
+          <h3>Fluent Design & Mica</h3>
+          <p>Adheres strictly to Windows 11 design guidelines with Mica, Mica Alt, or Acrylic materials, system accent color integration, and full dark and light mode support.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🚀</div>
+          <h3>Native ARM64 & x64</h3>
+          <p>Shipped as self-contained single-file native binaries for Qualcomm Snapdragon X / Surface ARM devices as well as Intel/AMD 64-bit systems.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🔒</div>
+          <h3>Zero Telemetry</h3>
+          <p>Pulse has no cloud phone-homes, analytics pings, or credential storage. It operates entirely locally on your Windows machine.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="download">
+      <div class="download-card">
+        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Download Pulse v1.0.0</h2>
+        <p style="color: var(--text-muted);">Unpackaged, portable, and fully self-contained. No .NET runtime installation required.</p>
+
+        <div class="download-grid">
+          <a href="https://github.com/charles-forsyth/pulse-windows/releases/download/v1.0.0/Pulse-arm64.zip" class="dl-item">
+            <span class="dl-title">Pulse-arm64.zip</span>
+            <span class="dl-desc">For Snapdragon X Elite, Surface Pro ARM, and ARM64 VMs</span>
+            <span style="font-size: 0.75rem; color: #818cf8; margin-top: auto;">SHA-256: 0c61ee20...</span>
+          </a>
+          <a href="https://github.com/charles-forsyth/pulse-windows/releases/download/v1.0.0/Pulse-x64.zip" class="dl-item">
+            <span class="dl-title">Pulse-x64.zip</span>
+            <span class="dl-desc">For Intel Core / Xeon & AMD Ryzen / EPYC 64-bit PCs</span>
+            <span style="font-size: 0.75rem; color: #818cf8; margin-top: auto;">SHA-256: 4d347ee6...</span>
+          </a>
+        </div>
+
+        <div class="smartscreen-notice">
+          <strong>Note on Windows SmartScreen:</strong> Pulse is an open-source project and is not signed with an expensive commercial EV code-signing certificate. When opening Pulse for the first time, Windows Defender SmartScreen may display a notification saying <em>"Windows protected your PC"</em>. Simply click <strong>More info</strong> and then click <strong>Run anyway</strong>.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="cite">
+      <h2 class="section-title">Citation</h2>
+      <p class="section-subtitle">If you use Pulse in system monitoring or research benchmarking, please cite as follows:</p>
+
+      <div class="cite-box">
+        <button class="copy-btn" onclick="copyCite()">Copy</button>
+<span id="cite-text">@software{forsyth2026pulse,
+  author       = {Forsyth, Charles E. III},
+  title        = {Pulse: Modern System Monitor for Windows},
+  year         = {2026},
+  publisher    = {GitHub},
+  version      = {1.0.0},
+  url          = {https://github.com/charles-forsyth/pulse-windows},
+  note         = {DOI: pending}
+}</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Pulse is open-source software released under the <a href="https://github.com/charles-forsyth/pulse-windows/blob/main/LICENSE">MIT License</a>.</p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #6b7280;">Author: Charles Forsyth (ORCID: 0000-0003-4872-0296) · University of California, Riverside</p>
+  </footer>
+
+  <script>
+    const shots = {
+      'overview-dark': 'screenshots/pulse_overview_dark.png',
+      'processes-dark': 'screenshots/pulse_processes_dark.png',
+      'system-dark': 'screenshots/pulse_system_dark.png',
+      'settings-dark': 'screenshots/pulse_settings_dark.png',
+      'overview-light': 'screenshots/pulse_overview_light.png'
+    };
+
+    function switchTab(key) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      const img = document.getElementById('shot-img');
+      img.style.opacity = 0.4;
+      setTimeout(() => {
+        img.src = shots[key];
+        img.style.opacity = 1.0;
+      }, 150);
+    }
+
+    function copyCite() {
+      const text = document.getElementById('cite-text').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.innerText = 'Copied!';
+        setTimeout(() => btn.innerText = 'Copy', 2000);
+      });
+    }
+  </script>
+</body>
+</html>
